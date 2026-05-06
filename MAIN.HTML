@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&family=Space+Mono:wght@400;700&family=DM+Serif+Display&family=Syne:wght@400;600;800&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f11;
+    --surface: #1a1a1f;
+    --border: #2e2e38;
+    --accent: #e8c547;
+    --accent2: #7b61ff;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --input-bg: #14141a;
+  }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--surface);
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+  }
+  header span { color: var(--muted); font-size: 0.85rem; }
+
+  /* ── Layout ── */
+  .app { display: flex; flex: 1; min-height: 0; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 360px;
+    min-width: 320px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-tab {
+    flex: 1;
+    padding: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+  .sidebar-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: rgba(232,197,71,0.04);
+  }
+  .sidebar-tab:hover:not(.active) { color: var(--text); }
+
+  .sidebar-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+  .sidebar-content::-webkit-scrollbar { width: 4px; }
+  .sidebar-content::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── Form ── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.04em;
+  }
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: none;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    border-color: var(--accent);
+  }
+  .form-group textarea { min-height: 70px; }
+  .form-row { display: flex; gap: 0.75rem; }
+  .form-row .form-group { flex: 1; }
+
+  /* Dynamic entries */
+  .entry-card {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+  }
+  .entry-remove {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .entry-remove:hover { color: #ff6b6b; background: rgba(255,107,107,0.1); }
+  .add-btn {
+    width: 100%;
+    padding: 0.5rem;
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: 'Lato', sans-serif;
+    transition: all 0.2s;
+    margin-top: 0.25rem;
+  }
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .form-section { margin-bottom: 2rem; }
+
+  /* Skills tags */
+  .skills-input-area {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.5rem;
+    min-height: 60px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: flex-start;
+    cursor: text;
+    transition: border-color 0.2s;
+  }
+  .skills-input-area:focus-within { border-color: var(--accent); }
+  .skill-tag {
+    background: rgba(232,197,71,0.12);
+    border: 1px solid rgba(232,197,71,0.3);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .skill-tag button {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    padding: 0;
+    opacity: 0.6;
+  }
+  .skill-tag button:hover { opacity: 1; }
+  .skill-input {
+    flex: 1;
+    min-width: 80px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: 'Lato', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    padding: 2px 4px;
+  }
+
+  /* ── Template Picker ── */
+  .template-grid { display: flex; flex-direction: column; gap: 1rem; }
+  .template-card {
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .template-card.selected {
+    border-color: var(--accent);
+    background: rgba(232,197,71,0.05);
+  }
+  .template-card:hover:not(.selected) { border-color: var(--muted); }
+  .template-thumb {
+    width: 56px;
+    height: 72px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .template-thumb-1 { background: #fff; }
+  .template-thumb-1 .th-header { height: 20px; background: #1a1a2e; }
+  .template-thumb-1 .th-body { flex:1; padding:4px; display:flex; gap:3px; }
+  .template-thumb-1 .th-left { width: 40%; background: #f0f0f0; border-radius: 2px; }
+  .template-thumb-1 .th-right { flex:1; display:flex; flex-direction:column; gap:2px; }
+  .template-thumb-1 .th-line { height:3px; background:#ddd; border-radius:1px; }
+  .template-thumb-2 { background: #fdf6e3; }
+  .template-thumb-2 .th-header { height: 28px; background: #8b0000; display:flex; align-items:center; padding: 0 4px; }
+  .template-thumb-2 .th-dot { width:12px;height:12px;border-radius:50%;background:#fdf6e3; }
+  .template-thumb-2 .th-body { flex:1; padding:4px; display:flex; flex-direction:column; gap:2px; }
+  .template-thumb-2 .th-line { height:2.5px; background:#c8b08a; border-radius:1px; }
+  .template-thumb-2 .th-section { height:5px; background:#8b0000; border-radius:1px; margin-top:2px; width:40%; }
+  .template-thumb-3 { background: #0d1117; }
+  .template-thumb-3 .th-header { height: 22px; background: #00ff9f22; border-bottom: 1px solid #00ff9f44; display:flex;align-items:center;padding:0 4px; }
+  .template-thumb-3 .th-dot { width:4px;height:4px;border-radius:50%;background:#00ff9f; margin-right:2px; }
+  .template-thumb-3 .th-body { flex:1; padding:4px; display:flex; flex-direction:column; gap:2px; }
+  .template-thumb-3 .th-line { height:2px; background:#1e2a1e; border-radius:1px; }
+  .template-thumb-3 .th-line.accent { background:#00ff9f44; }
+  .template-info h3 { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; margin-bottom:0.2rem; }
+  .template-info p { font-size:0.75rem; color:var(--muted); line-height:1.4; }
+
+  /* Print btn */
+  .print-section { padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
+  .print-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--accent);
+    color: #0f0f11;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .print-btn:hover { background: #f5d76e; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(232,197,71,0.3); }
+
+  /* ── Preview ── */
+  .preview-area {
+    flex: 1;
+    overflow-y: auto;
+    background: #3a3a45;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    gap: 0;
+  }
+  .preview-area::-webkit-scrollbar { width: 6px; }
+  .preview-area::-webkit-scrollbar-track { background: transparent; }
+  .preview-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .resume-sheet {
+    width: 794px;
+    min-height: 1123px;
+    background: white;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+    color: #111;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* ════════ TEMPLATE 1: EXECUTIVE ════════ */
+  .tpl-executive .tpl-header {
+    background: #1a1a2e;
+    color: white;
+    padding: 2.5rem 2.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .tpl-executive .name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .tpl-executive .title {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    font-size: 0.95rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #e8c547;
+  }
+  .tpl-executive .contact-info {
+    text-align: right;
+    font-size: 0.75rem;
+    color: #aaa;
+    line-height: 1.8;
+  }
+  .tpl-executive .contact-info a { color: #e8c547; text-decoration: none; }
+  .tpl-executive .tpl-body {
+    display: flex;
+    min-height: calc(100% - 150px);
+  }
+  .tpl-executive .tpl-left {
+    width: 220px;
+    background: #f7f7f9;
+    padding: 1.5rem 1.2rem;
+    border-right: 1px solid #e8e8ef;
+    flex-shrink: 0;
+  }
+  .tpl-executive .tpl-right {
+    flex: 1;
+    padding: 1.5rem 1.8rem;
+  }
+  .tpl-executive .sec-head {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #1a1a2e;
+    border-bottom: 2px solid #e8c547;
+    padding-bottom: 0.3rem;
+    margin-bottom: 0.8rem;
+    margin-top: 1.2rem;
+  }
+  .tpl-executive .tpl-left .sec-head:first-child { margin-top: 0; }
+  .tpl-executive .skill-item {
+    font-size: 0.78rem;
+    color: #444;
+    padding: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tpl-executive .skill-item::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #e8c547;
+    flex-shrink: 0;
+  }
+  .tpl-executive .exp-item { margin-bottom: 1rem; }
+  .tpl-executive .exp-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+  .tpl-executive .exp-company {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.2rem;
+  }
+  .tpl-executive .exp-date {
+    font-size: 0.72rem;
+    color: #e8c547;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.3rem;
+  }
+  .tpl-executive .exp-desc {
+    font-size: 0.78rem;
+    color: #555;
+    line-height: 1.6;
+  }
+  .tpl-executive .edu-item { margin-bottom: 0.8rem; }
+  .tpl-executive .edu-degree {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+  .tpl-executive .edu-school {
+    font-size: 0.75rem;
+    color: #666;
+  }
+  .tpl-executive .summary-text {
+    font-size: 0.82rem;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ════════ TEMPLATE 2: CLASSIC ════════ */
+  .tpl-classic {
+    font-family: 'Crimson Pro', serif;
+    padding: 0;
+  }
+  .tpl-classic .tpl-header {
+    background: #8b0000;
+    padding: 2rem 2.5rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .tpl-classic .avatar-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 3px solid rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: white;
+    flex-shrink: 0;
+  }
+  .tpl-classic .name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .tpl-classic .title {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    letter-spacing: 0.05em;
+    font-weight: 300;
+  }
+  .tpl-classic .contact-row {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.6rem 2.5rem;
+    background: #fdf6e3;
+    border-bottom: 2px solid #e8c090;
+    font-size: 0.75rem;
+    color: #6b4423;
+    flex-wrap: wrap;
+  }
+  .tpl-classic .contact-row span { display: flex; align-items: center; gap: 4px; }
+  .tpl-classic .tpl-body {
+    padding: 1.5rem 2.5rem;
+  }
+  .tpl-classic .sec-head {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.1rem;
+    color: #8b0000;
+    border-bottom: 1.5px solid #8b0000;
+    padding-bottom: 0.2rem;
+    margin-bottom: 0.8rem;
+    margin-top: 1.5rem;
+  }
+  .tpl-classic .sec-head:first-child { margin-top: 0; }
+  .tpl-classic .summary-text {
+    font-size: 0.9rem;
+    color: #444;
+    line-height: 1.7;
+  }
+  .tpl-classic .exp-item { margin-bottom: 1rem; }
+  .tpl-classic .exp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .tpl-classic .exp-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    color: #222;
+  }
+  .tpl-classic .exp-date {
+    font-size: 0.78rem;
+    color: #8b0000;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tpl-classic .exp-company {
+    font-size: 0.82rem;
+    color: #6b4423;
+    font-style: italic;
+    margin-bottom: 0.3rem;
+  }
+  .tpl-classic .exp-desc {
+    font-size: 0.82rem;
+    color: #555;
+    line-height: 1.65;
+  }
+  .tpl-classic .edu-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+  }
+  .tpl-classic .edu-degree { font-size: 0.9rem; font-weight: 600; color: #222; }
+  .tpl-classic .edu-school { font-size: 0.82rem; color: #666; font-style:italic; }
+  .tpl-classic .edu-year { font-size: 0.78rem; color: #8b0000; }
+  .tpl-classic .skills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .tpl-classic .skill-badge {
+    background: #fdf6e3;
+    border: 1px solid #e8c090;
+    color: #6b4423;
+    padding: 3px 10px;
+    border-radius: 2px;
+    font-size: 0.78rem;
+  }
+
+  /* ════════ TEMPLATE 3: MINIMAL TECH ════════ */
+  .tpl-tech {
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: 'Space Mono', monospace;
+    min-height: 1123px;
+  }
+  .tpl-tech .tpl-header {
+    padding: 2rem 2.5rem 1.5rem;
+    border-bottom: 1px solid #21262d;
+    position: relative;
+    overflow: hidden;
+  }
+  .tpl-tech .tpl-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #00ff9f0d 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .tpl-tech .name {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #e6edf3;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.2rem;
+  }
+  .tpl-tech .name span { color: #00ff9f; }
+  .tpl-tech .title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    color: #00ff9f;
+    margin-bottom: 0.8rem;
+  }
+  .tpl-tech .title::before { content: '> '; opacity: 0.5; }
+  .tpl-tech .contact-row {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.7rem;
+    color: #8b949e;
+    flex-wrap: wrap;
+  }
+  .tpl-tech .contact-row span { display: flex; align-items: center; gap: 5px; }
+  .tpl-tech .contact-row .ico { color: #00ff9f; }
+  .tpl-tech .tpl-body {
+    display: flex;
+    gap: 0;
+  }
+  .tpl-tech .tpl-left {
+    width: 230px;
+    padding: 1.5rem 1.2rem;
+    border-right: 1px solid #21262d;
+    flex-shrink: 0;
+  }
+  .tpl-tech .tpl-right {
+    flex: 1;
+    padding: 1.5rem 1.8rem;
+  }
+  .tpl-tech .sec-head {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: #00ff9f;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    margin-top: 1.2rem;
+  }
+  .tpl-tech .sec-head:first-child { margin-top: 0; }
+  .tpl-tech .sec-head::before { content: '## '; opacity: 0.4; }
+  .tpl-tech .skill-item {
+    font-size: 0.72rem;
+    color: #8b949e;
+    padding: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tpl-tech .skill-item::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background: #00ff9f;
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+  .tpl-tech .exp-item { margin-bottom: 1.2rem; border-left: 2px solid #21262d; padding-left: 0.8rem; }
+  .tpl-tech .exp-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e6edf3;
+  }
+  .tpl-tech .exp-company {
+    font-size: 0.7rem;
+    color: #00ff9f;
+    margin-bottom: 0.2rem;
+  }
+  .tpl-tech .exp-date {
+    font-size: 0.65rem;
+    color: #484f58;
+    margin-bottom: 0.3rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .tpl-tech .exp-desc {
+    font-size: 0.73rem;
+    color: #8b949e;
+    line-height: 1.7;
+  }
+  .tpl-tech .edu-item { margin-bottom: 0.7rem; }
+  .tpl-tech .edu-degree { font-size: 0.78rem; color: #c9d1d9; font-family:'Syne',sans-serif; font-weight:600; }
+  .tpl-tech .edu-school { font-size: 0.7rem; color: #8b949e; }
+  .tpl-tech .edu-year { font-size: 0.65rem; color: #484f58; }
+  .tpl-tech .summary-text { font-size: 0.73rem; color: #8b949e; line-height: 1.8; }
+  .tpl-tech .skill-badge {
+    display: inline-block;
+    background: #161b22;
+    border: 1px solid #30363d;
+    color: #8b949e;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.68rem;
+    margin: 2px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Empty state */
+  .empty-line { background: #eee; height: 1em; border-radius: 3px; display: inline-block; width: var(--w, 100%); opacity: 0.4; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { background: white; margin: 0; padding: 0; }
+    header, .sidebar, .print-section { display: none !important; }
+    .app { display: block; }
+    .preview-area {
+      background: white !important;
+      padding: 0 !important;
+      display: block !important;
+      overflow: visible !important;
+    }
+    .resume-sheet {
+      width: 100% !important;
+      min-height: auto !important;
+      box-shadow: none !important;
+      page-break-inside: avoid;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Resume Maker</h1>
+  <span>  </span>
+</header>
+
+<div class="app">
+  <!-- ──── SIDEBAR ──── -->
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" onclick="switchTab('info', this)">Info</button>
+      <button class="sidebar-tab" onclick="switchTab('experience', this)">Experience</button>
+      <button class="sidebar-tab" onclick="switchTab('template', this)">Template</button>
+    </div>
+
+    <!-- INFO TAB -->
+    <div class="sidebar-content" id="tab-info">
+      <div class="form-section">
+        <div class="section-title">Personal Info</div>
+        <div class="form-group"><label>Full Name</label><input type="text" id="name" placeholder="Jane Smith" oninput="update()"></div>
+        <div class="form-group"><label>Job Title</label><input type="text" id="job-title" placeholder="Senior Product Designer" oninput="update()"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="jane@email.com" oninput="update()"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Phone</label><input type="text" id="phone" placeholder="+1 555 0100" oninput="update()"></div>
+          <div class="form-group"><label>Location</label><input type="text" id="location" placeholder="New York, NY" oninput="update()"></div>
+        </div>
+        <div class="form-group"><label>LinkedIn / Website</label><input type="text" id="website" placeholder="linkedin.com/in/janesmith" oninput="update()"></div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Summary</div>
+        <div class="form-group"><textarea id="summary" placeholder="A brief professional summary…" oninput="update()"></textarea></div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Education</div>
+        <div id="edu-list"></div>
+        <button class="add-btn" onclick="addEdu()">+ Add Education</button>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title">Skills</div>
+        <div class="skills-input-area" id="skills-area" onclick="document.getElementById('skill-inp').focus()">
+          <input class="skill-input" id="skill-inp" placeholder="Type skill and press Enter…" onkeydown="handleSkillKey(event)">
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPERIENCE TAB -->
+    <div class="sidebar-content" id="tab-experience" style="display:none">
+      <div class="form-section">
+        <div class="section-title">Work Experience</div>
+        <div id="exp-list"></div>
+        <button class="add-btn" onclick="addExp()">+ Add Experience</button>
+      </div>
+    </div>
+
+    <!-- TEMPLATE TAB -->
+    <div class="sidebar-content" id="tab-template" style="display:none">
+      <div class="section-title">Choose Template</div>
+      <div class="template-grid">
+        <div class="template-card selected" onclick="selectTemplate('executive', this)">
+          <div class="template-thumb template-thumb-1">
+            <div class="th-header"></div>
+            <div class="th-body">
+              <div class="th-left"></div>
+              <div class="th-right">
+                <div class="th-line"></div><div class="th-line" style="width:70%"></div>
+                <div class="th-line" style="width:90%"></div><div class="th-line" style="width:60%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="template-info">
+            <h3>Executive</h3>
+            <p>Dark header, two-column layout. Professional and authoritative.</p>
+          </div>
+        </div>
+        <div class="template-card" onclick="selectTemplate('classic', this)">
+          <div class="template-thumb template-thumb-2">
+            <div class="th-header"><div class="th-dot"></div></div>
+            <div class="th-body">
+              <div class="th-section"></div>
+              <div class="th-line"></div><div class="th-line" style="width:85%"></div>
+              <div class="th-line" style="width:70%"></div>
+              <div class="th-section"></div>
+              <div class="th-line"></div><div class="th-line" style="width:90%"></div>
+            </div>
+          </div>
+          <div class="template-info">
+            <h3>Classic</h3>
+            <p>Serif fonts, warm tones. Timeless and elegant for traditional fields.</p>
+          </div>
+        </div>
+        <div class="template-card" onclick="selectTemplate('tech', this)">
+          <div class="template-thumb template-thumb-3">
+            <div class="th-header">
+              <div class="th-dot"></div><div class="th-dot"></div><div class="th-dot"></div>
+            </div>
+            <div class="th-body">
+              <div class="th-line accent"></div>
+              <div class="th-line"></div><div class="th-line" style="width:80%"></div>
+              <div class="th-line accent" style="width:50%"></div>
+              <div class="th-line"></div><div class="th-line" style="width:90%"></div>
+            </div>
+          </div>
+          <div class="template-info">
+            <h3>Minimal Tech</h3>
+            <p>Dark mode, monospace. Bold choice for engineers & developers.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="print-section">
+      <button class="print-btn" onclick="window.print()">⬇ Download / Print PDF</button>
+    </div>
+  </div>
+
+  <!-- ──── PREVIEW ──── -->
+  <div class="preview-area">
+    <div class="resume-sheet" id="resume-preview"></div>
+  </div>
+</div>
+
+<script>
+let currentTemplate = 'executive';
+let skills = [];
+let experiences = [];
+let educations = [];
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.sidebar-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.sidebar-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).style.display = 'block';
+  btn.classList.add('active');
+}
+
+function selectTemplate(name, card) {
+  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  currentTemplate = name;
+  update();
+}
+
+// ── Skills ──
+function handleSkillKey(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,$/, '');
+    if (val && !skills.includes(val)) {
+      skills.push(val);
+      renderSkillTags();
+      update();
+    }
+    e.target.value = '';
+  }
+}
+
+function removeSkill(idx) {
+  skills.splice(idx, 1);
+  renderSkillTags();
+  update();
+}
+
+function renderSkillTags() {
+  const area = document.getElementById('skills-area');
+  const input = document.getElementById('skill-inp');
+  area.innerHTML = '';
+  skills.forEach((s, i) => {
+    const tag = document.createElement('div');
+    tag.className = 'skill-tag';
+    tag.innerHTML = `${s}<button onclick="removeSkill(${i})">×</button>`;
+    area.appendChild(tag);
+  });
+  area.appendChild(input);
+}
+
+// ── Experience ──
+function addExp() {
+  experiences.push({ title: '', company: '', date: '', desc: '' });
+  renderExpList();
+}
+
+function removeExp(i) {
+  experiences.splice(i, 1);
+  renderExpList();
+  update();
+}
+
+function renderExpList() {
+  const list = document.getElementById('exp-list');
+  list.innerHTML = '';
+  experiences.forEach((exp, i) => {
+    const card = document.createElement('div');
+    card.className = 'entry-card';
+    card.innerHTML = `
+      <button class="entry-remove" onclick="removeExp(${i})">×</button>
+      <div class="form-group"><label>Job Title</label><input type="text" value="${exp.title}" placeholder="Software Engineer" oninput="experiences[${i}].title=this.value;update()"></div>
+      <div class="form-group"><label>Company</label><input type="text" value="${exp.company}" placeholder="Acme Corp" oninput="experiences[${i}].company=this.value;update()"></div>
+      <div class="form-group"><label>Dates</label><input type="text" value="${exp.date}" placeholder="Jan 2021 – Present" oninput="experiences[${i}].date=this.value;update()"></div>
+      <div class="form-group"><label>Description</label><textarea placeholder="Key responsibilities and achievements…" oninput="experiences[${i}].desc=this.value;update()">${exp.desc}</textarea></div>
+    `;
+    list.appendChild(card);
+  });
+  update();
+}
+
+// ── Education ──
+function addEdu() {
+  educations.push({ degree: '', school: '', year: '' });
+  renderEduList();
+}
+
+function removeEdu(i) {
+  educations.splice(i, 1);
+  renderEduList();
+  update();
+}
+
+function renderEduList() {
+  const list = document.getElementById('edu-list');
+  list.innerHTML = '';
+  educations.forEach((edu, i) => {
+    const card = document.createElement('div');
+    card.className = 'entry-card';
+    card.innerHTML = `
+      <button class="entry-remove" onclick="removeEdu(${i})">×</button>
+      <div class="form-group"><label>Degree</label><input type="text" value="${edu.degree}" placeholder="B.Sc. Computer Science" oninput="educations[${i}].degree=this.value;update()"></div>
+      <div class="form-row">
+        <div class="form-group"><label>School</label><input type="text" value="${edu.school}" placeholder="MIT" oninput="educations[${i}].school=this.value;update()"></div>
+        <div class="form-group"><label>Year</label><input type="text" value="${edu.year}" placeholder="2019" oninput="educations[${i}].year=this.value;update()"></div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+  update();
+}
+
+// ── Collect Data ──
+function getData() {
+  return {
+    name: document.getElementById('name').value || 'Your Name',
+    title: document.getElementById('job-title').value || 'Professional Title',
+    email: document.getElementById('email').value || '',
+    phone: document.getElementById('phone').value || '',
+    location: document.getElementById('location').value || '',
+    website: document.getElementById('website').value || '',
+    summary: document.getElementById('summary').value || '',
+  };
+}
+
+function initials(name) {
+  return name.split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase() || 'YN';
+}
+
+// ── Render Templates ──
+function renderExecutive(d) {
+  const expHTML = experiences.length ? experiences.map(e => `
+    <div class="exp-item">
+      <div class="exp-title">${e.title || 'Position'}</div>
+      <div class="exp-company">${e.company || 'Company'}</div>
+      <div class="exp-date">${e.date || ''}</div>
+      <div class="exp-desc">${(e.desc || '').replace(/\n/g,'<br>')}</div>
+    </div>
+  `).join('') : '<div class="exp-desc" style="color:#bbb;font-size:0.8rem">Add experience from the Experience tab</div>';
+
+  const eduHTML = educations.length ? educations.map(e => `
+    <div class="edu-item">
+      <div class="edu-degree">${e.degree || 'Degree'}</div>
+      <div class="edu-school">${e.school || ''}${e.year ? ' · ' + e.year : ''}</div>
+    </div>
+  `).join('') : '<div style="color:#bbb;font-size:0.78rem">Add education from the Info tab</div>';
+
+  const skillHTML = skills.length ? skills.map(s => `<div class="skill-item">${s}</div>`).join('') 
+    : '<div style="color:#bbb;font-size:0.78rem">Add skills from the Info tab</div>';
+
+  return `
+    <div class="tpl-executive" style="min-height:1123px">
+      <div class="tpl-header">
+        <div>
+          <div class="name">${d.name}</div>
+          <div class="title">${d.title}</div>
+        </div>
+        <div class="contact-info">
+          ${d.email ? `<div>${d.email}</div>` : ''}
+          ${d.phone ? `<div>${d.phone}</div>` : ''}
+          ${d.location ? `<div>${d.location}</div>` : ''}
+          ${d.website ? `<div>${d.website}</div>` : ''}
+        </div>
+      </div>
+      <div class="tpl-body">
+        <div class="tpl-left">
+          <div class="sec-head">Skills</div>
+          ${skillHTML}
+          ${educations.length ? `<div class="sec-head">Education</div>${eduHTML}` : ''}
+        </div>
+        <div class="tpl-right">
+          ${d.summary ? `<div class="sec-head">Profile</div><div class="summary-text">${d.summary.replace(/\n/g,'<br>')}</div>` : ''}
+          <div class="sec-head">Experience</div>
+          ${expHTML}
+          ${!educations.length ? `<div class="sec-head">Education</div>${eduHTML}` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderClassic(d) {
+  const expHTML = experiences.length ? experiences.map(e => `
+    <div class="exp-item">
+      <div class="exp-header">
+        <div class="exp-title">${e.title || 'Position'}</div>
+        <div class="exp-date">${e.date || ''}</div>
+      </div>
+      <div class="exp-company">${e.company || 'Company'}</div>
+      <div class="exp-desc">${(e.desc || '').replace(/\n/g,'<br>')}</div>
+    </div>
+  `).join('') : '<div class="exp-desc" style="color:#bbb">Add experience from the Experience tab</div>';
+
+  const eduHTML = educations.length ? educations.map(e => `
+    <div class="edu-item">
+      <div>
+        <div class="edu-degree">${e.degree || 'Degree'}</div>
+        <div class="edu-school">${e.school || ''}</div>
+      </div>
+      <div class="edu-year">${e.year || ''}</div>
+    </div>
+  `).join('') : '<div style="color:#bbb;font-size:0.85rem">Add education</div>';
+
+  const skillHTML = skills.length ? `<div class="skills-row">${skills.map(s => `<span class="skill-badge">${s}</span>`).join('')}</div>`
+    : '<div style="color:#bbb;font-size:0.85rem">Add skills</div>';
+
+  return `
+    <div class="tpl-classic" style="min-height:1123px;background:#fdf6e3;">
+      <div class="tpl-header">
+        <div class="avatar-circle">${initials(d.name)}</div>
+        <div>
+          <div class="name">${d.name}</div>
+          <div class="title">${d.title}</div>
+        </div>
+      </div>
+      <div class="contact-row">
+        ${d.email ? `<span>✉ ${d.email}</span>` : ''}
+        ${d.phone ? `<span>✆ ${d.phone}</span>` : ''}
+        ${d.location ? `<span>⌖ ${d.location}</span>` : ''}
+        ${d.website ? `<span>⊹ ${d.website}</span>` : ''}
+      </div>
+      <div class="tpl-body">
+        ${d.summary ? `<div class="sec-head">Professional Summary</div><div class="summary-text">${d.summary.replace(/\n/g,'<br>')}</div>` : ''}
+        <div class="sec-head">Experience</div>
+        ${expHTML}
+        <div class="sec-head">Education</div>
+        ${eduHTML}
+        <div class="sec-head">Skills</div>
+        ${skillHTML}
+      </div>
+    </div>`;
+}
+
+function renderTech(d) {
+  const expHTML = experiences.length ? experiences.map(e => `
+    <div class="exp-item">
+      <div class="exp-title">${e.title || 'Position'}</div>
+      <div class="exp-company">${e.company || 'Company'}</div>
+      <div class="exp-date">${e.date || ''}</div>
+      <div class="exp-desc">${(e.desc || '').replace(/\n/g,'<br>')}</div>
+    </div>
+  `).join('') : '<div class="exp-desc">Add experience from the Experience tab</div>';
+
+  const eduHTML = educations.length ? educations.map(e => `
+    <div class="edu-item">
+      <div class="edu-degree">${e.degree || 'Degree'}</div>
+      <div class="edu-school">${e.school || ''}</div>
+      <div class="edu-year">${e.year || ''}</div>
+    </div>
+  `).join('') : '<div style="color:#484f58;font-size:0.72rem">Add education</div>';
+
+  const skillHTML = skills.length ? skills.map(s => `<div class="skill-item">${s}</div>`).join('')
+    : '<div style="color:#484f58;font-size:0.72rem">Add skills</div>';
+
+  return `
+    <div class="tpl-tech">
+      <div class="tpl-header">
+        <div class="name">${d.name}</div>
+        <div class="title">${d.title}</div>
+        <div class="contact-row">
+          ${d.email ? `<span><span class="ico">@</span>${d.email}</span>` : ''}
+          ${d.phone ? `<span><span class="ico">☎</span>${d.phone}</span>` : ''}
+          ${d.location ? `<span><span class="ico">⌖</span>${d.location}</span>` : ''}
+          ${d.website ? `<span><span class="ico">⊹</span>${d.website}</span>` : ''}
+        </div>
+      </div>
+      <div class="tpl-body">
+        <div class="tpl-left">
+          <div class="sec-head">Skills</div>
+          ${skillHTML}
+          <div class="sec-head">Education</div>
+          ${eduHTML}
+        </div>
+        <div class="tpl-right">
+          ${d.summary ? `<div class="sec-head">About</div><div class="summary-text">${d.summary.replace(/\n/g,'<br>')}</div>` : ''}
+          <div class="sec-head">Experience</div>
+          ${expHTML}
+        </div>
+      </div>
+    </div>`;
+}
+
+function update() {
+  const d = getData();
+  const preview = document.getElementById('resume-preview');
+  if (currentTemplate === 'executive') preview.innerHTML = renderExecutive(d);
+  else if (currentTemplate === 'classic') preview.innerHTML = renderClassic(d);
+  else preview.innerHTML = renderTech(d);
+}
+
+// Init with one entry each
+addExp();
+addEdu();
+update();
+</script>
+</body>
+</html>
